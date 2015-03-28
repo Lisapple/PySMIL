@@ -1,43 +1,20 @@
 #!/usr/bin/python
 
-# Import modules for CGI handling 
-#import cgi, cgitb 
+import sys
 
-# Create instance of FieldStorage 
-#form = cgi.FieldStorage()
-#first_name = form.getvalue("first_name")
-#last_name  = form.getvalue("last_name")
-
-s = " \
-	<3 :(:(:D:):)=;:$:$:$:$:$:$:$:$ \
-	:(:P:)=;:$:$:$:$:$:$:$:$:#:$ \
-	:(L):)=;L):$:$:$:$:$:$:$:$ \
-	:(:P:)=;:$:>:$ \
-	8| :(L):) :> :(:P:) |) \
-		:@ :$:$:$:$:$:$:$:$ %) :(:P:) @) \
-		:(:P:) =; :(:P:) :# :$ :/ :$ \
-		:@ :(L):) :(:P:) @) \
-		8) \
-	8} \
-	</3"
-
+s = ""
 index = 0 # The index of the current char into |s|
-vars = { ":$" : 2, ":$:$" : "+", ":$:$:$" : 2, ":$:$:$:$" : 2, ":$:$:$:$:$" : 12, 
-		":$:$:$:$:$:$" : 3, ":$:$:$:$:$:$:$" : 6, ":$:$:$:$:$:$:$:$" : "hello",
-		":$:$:$:$:$:$:$:$:$" : 3, ":$:$:$:$:$:$:$:$:$:$" : "el" }
+vars = { }
 exprs = []
 lastExpr = 0
 stack = []
 
 verboseMode = False
 
-import sys
-
 # Read the file with the name specified by the second arg
 #   (the first arg is the name of the executable)
 if len(sys.argv) >= 2:
 	s = open(sys.argv[1]).read()
-	#print(s)
 
 name = ""
 for arg in sys.argv[2:]:
@@ -127,7 +104,9 @@ class VarExpr(Expr):
 		
 	def execute(self):
 		global vars
-		if self.inversed:
+		if len(self.name) == 0:
+			return 0
+		elif self.inversed:
 			return not(vars[self.name]) if (self.name in vars) else 0
 		else: return vars[self.name] if (self.name in vars) else 0
 
@@ -144,7 +123,9 @@ class NamedVarExpr(Expr):
 	def execute(self):
 		global vars
 		name = self.expr.execute()
-		if self.inversed:
+		if len(name) == 0:
+			return 0
+		elif self.inversed:
 			return not(vars[name]) if (name in vars) else name
 		else: return vars[name] if (name in vars) else name
 
@@ -332,7 +313,6 @@ def parseBinOpExpr(LHS, op):
 		lastOp = ops[-1]
 		if opprecedence(lastOp) >= opprecedence(op):
 			rops = ops[::-1] # Reverse |ops|
-			#rops.reverse() # @FIXME: Why reverse it again?
 			for rop in rops:
 				if opprecedence(op) > opprecedence(rop):
 					break
