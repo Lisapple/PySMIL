@@ -54,7 +54,7 @@ def gettok():
 	global s
 	global index
 	while 1:
-		if index > len(s): break
+		if index >= len(s): break
 		
 		c = s[index];
 		if isskipable(c):
@@ -75,7 +75,7 @@ def nexttok(skipSkipable = True):
 	global index
 	tmp_index = index
 	while 1:
-		if index > len(s): break
+		if tmp_index >= len(s): break
 		
 		c = s[tmp_index];
 		if skipSkipable and isskipable(c):
@@ -138,10 +138,14 @@ def parseVarExpr(inversed = False):
 	else:
 		name = ""
 		while 1:
-			tok = gettok()
-			if tok == ":)": break
+			if nexttok(False) == ":)":
+				gettok() # Eat ":)"
+				break
 			else:
-				name += tok
+				global s
+				global index
+				name += s[index]
+				index += 1
 		return VarExpr(name, inversed)
 
 class InitExpr(Expr):
@@ -263,6 +267,7 @@ class BinOpExpr(Expr):
 			print("PrO6raw 3x1t3d.")
 			exit(1)
 		
+		print( LHS,RHS )
 		if not(isstr(LHS)) and not(isstr(RHS)): # n,n
 			if   op == ":#": return LHS + RHS
 			elif op == ":>": return LHS - RHS
@@ -568,7 +573,7 @@ def parse():
 		expr = parseExpr()
 		if expr:
 			if isinstance(expr, UnknownExpr):
-				error(UnknownExpr.description)
+				error(expr.description())
 			exprs.append(expr)
 			if isinstance(expr, Expr):
 				lastExpr = expr
